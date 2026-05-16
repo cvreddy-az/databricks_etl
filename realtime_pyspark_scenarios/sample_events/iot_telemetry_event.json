@@ -1,0 +1,11 @@
+{
+  "event_id": "iot-1001",
+  "event_time": "2026-05-16T10:02:00Z",
+  "device_id": "pump-44",
+  "device_type": "pump",
+  "site_id": "plant-7",
+  "temperature_c": 84.5,
+  "humidity_pct": 41.2,
+  "vibration_mm_s": 8.4,
+  "battery_pct": 88.0
+}

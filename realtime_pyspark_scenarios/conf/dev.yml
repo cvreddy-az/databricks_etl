@@ -1,0 +1,32 @@
+environment: dev
+catalog: main
+schema: realtime_etl_dev
+checkpoint_root: /Volumes/main/realtime_etl_dev/checkpoints
+
+kafka:
+  bootstrap_servers: pkc-dev.example.confluent.cloud:9092
+  security_protocol: SASL_SSL
+  sasl_mechanism: PLAIN
+  starting_offsets: latest
+  fail_on_data_loss: false
+  max_offsets_per_trigger: 50000
+
+streaming:
+  watermark_delay: 10 minutes
+  trigger_interval: 30 seconds
+
+topics:
+  clickstream: clickstream.events
+  iot_telemetry: iot.telemetry
+  payment_transactions: payments.transactions
+
+tables:
+  clickstream_bronze: bronze_clickstream_events
+  clickstream_silver: silver_clickstream_events
+  clickstream_gold: gold_clickstream_metrics_5m
+  iot_bronze: bronze_iot_telemetry
+  iot_silver: silver_iot_telemetry
+  iot_gold: gold_iot_anomalies_5m
+  payments_bronze: bronze_payment_transactions
+  payments_silver: silver_payment_transactions
+  payments_gold: gold_payment_risk_5m
