@@ -1,0 +1,12 @@
+{
+  "transaction_id": "txn-1001",
+  "event_time": "2026-05-16T10:03:00Z",
+  "customer_id": "cust-701",
+  "merchant_id": "merchant-22",
+  "card_id": "card-889",
+  "amount": 5299.99,
+  "currency": "USD",
+  "country": "US",
+  "channel": "card_not_present",
+  "status": "approved"
+}

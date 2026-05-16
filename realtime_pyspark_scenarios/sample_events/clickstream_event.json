@@ -1,0 +1,12 @@
+{
+  "event_id": "evt-1001",
+  "event_time": "2026-05-16T10:01:30Z",
+  "user_id": "usr-901",
+  "session_id": "ses-abc",
+  "page_url": "https://shop.example.com/products/sku-1",
+  "referrer": "https://search.example.com",
+  "device_type": "mobile",
+  "campaign_id": "spring-sale",
+  "country": "IN",
+  "is_bot": false
+}
