@@ -27,10 +27,15 @@ scenario = dbutils.widgets.get("scenario")
 import sys
 from pathlib import Path
 
-repo_root = Path.cwd()
-scenario_src = repo_root / "realtime_pyspark_scenarios" / "src"
+# Get notebook directory from dbutils
+notebook_path = dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
+# notebook_path is like '/Users/.../notebooks/...' - prepend /Workspace
+repo_root = Path("/Workspace" + notebook_path).parent.parent
+scenario_src = repo_root / "src"
+
 if not scenario_src.exists():
-    scenario_src = repo_root.parent / "realtime_pyspark_scenarios" / "src"
+    raise FileNotFoundError(f"Source directory not found: {scenario_src}")
+
 sys.path.insert(0, str(scenario_src))
 
 from realtime_pyspark.common.config import load_config
@@ -53,8 +58,15 @@ from realtime_pyspark.transformations.payments import (
     score_payment_risk,
 )
 
-config = load_config(config_path)
-configure_streaming_session(spark)
+# Resolve config_path - if relative, resolve from repo_root's parent
+config_file = Path(config_path) if Path(config_path).is_absolute() else repo_root.parent / config_path
+config = load_config(str(config_file))
+
+# Configure streaming session (skip configs not available on Serverless)
+try:
+    configure_streaming_session(spark)
+except Exception:
+    pass
 
 # COMMAND ----------
 
@@ -103,12 +115,18 @@ else:
 
 # COMMAND ----------
 
+# Create schema if it doesn't exist
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {config.catalog}.{config.schema}")
+
+# Use AvailableNow trigger (Serverless doesn't support ProcessingTime)
+trigger_mode = "availableNow"
+
 bronze_query = write_stream_to_delta_table(
     bronze_df,
     table_name=config.table(bronze_table_key),
     checkpoint_path=config.checkpoint(bronze_table_key),
     query_name=bronze_table_key,
-    trigger_interval=config.streaming.trigger_interval,
+    trigger_interval=trigger_mode,
 )
 
 silver_query = write_stream_to_delta_table(
@@ -116,7 +134,7 @@ silver_query = write_stream_to_delta_table(
     table_name=config.table(silver_table_key),
     checkpoint_path=config.checkpoint(silver_table_key),
     query_name=silver_table_key,
-    trigger_interval=config.streaming.trigger_interval,
+    trigger_interval=trigger_mode,
     partition_by=["event_date"],
 )
 
@@ -125,7 +143,7 @@ gold_query = write_stream_to_delta_table(
     table_name=config.table(gold_table_key),
     checkpoint_path=config.checkpoint(gold_table_key),
     query_name=gold_table_key,
-    trigger_interval=config.streaming.trigger_interval,
+    trigger_interval=trigger_mode,
     output_mode="update",
 )
 
